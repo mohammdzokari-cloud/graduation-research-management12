@@ -11,26 +11,9 @@ class DashboardScreen extends StatelessWidget {
     return GetBuilder<DepartmentHeadController>(
       builder: (controller) {
         return Scaffold(
-          appBar: AppBar(
-            title: const Text(
-              'لوحة التحكم - رئيس القسم',
-              style: TextStyle(color: Colors.white),
-            ),
-            backgroundColor: AppConstants.primaryColor,
-            elevation: 0,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: () => controller.loadAllData(),
-              ),
-              IconButton(
-                icon: const Icon(Icons.logout),
-                onPressed: () {
-                  // Handle logout
-                },
-              ),
-            ],
-          ),
+          backgroundColor: Colors.grey[50], // Light background
+          appBar: _buildAppBar(controller),
+          drawer: _buildDrawer(), // Adding the drawer from the sidebar
           body: Obx(
             () {
               if (controller.isLoading.value) {
@@ -43,76 +26,129 @@ class DashboardScreen extends StatelessWidget {
                 onRefresh: () => controller.loadAllData(),
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Welcome Section
-                      _buildWelcomeSection(),
-                      const SizedBox(height: AppConstants.paddingLarge),
-
-                      // Statistics Cards
+                      // Statistics Cards Grid
                       _buildStatisticsSection(controller),
-                      const SizedBox(height: AppConstants.paddingLarge),
+                      const SizedBox(height: 20),
 
-                      // Quick Actions
-                      _buildQuickActionsSection(),
-                      const SizedBox(height: AppConstants.paddingLarge),
+                      // Department Researches Status (Pie Chart Area)
+                      _buildChartSection(controller),
+                      const SizedBox(height: 20),
 
-                      // Pending Researches Section
-                      _buildPendingResearchesSection(controller),
+                      // Latest Activities (List)
+                      _buildLatestActivitiesSection(controller),
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
               );
             },
           ),
-          floatingActionButton: FloatingActionButton(
-            backgroundColor: AppConstants.primaryColor,
-            onPressed: () {
-              Get.toNamed('/department_head/researches');
-            },
-            child: const Icon(Icons.list),
-          ),
         );
       },
     );
   }
 
-  /// Build welcome section
-  Widget _buildWelcomeSection() {
-    return Container(
-      padding: const EdgeInsets.all(AppConstants.paddingMedium),
-      decoration: BoxDecoration(
-        color: AppConstants.primaryColor,
-        borderRadius:
-            BorderRadius.circular(AppConstants.borderRadiusLarge),
+  PreferredSizeWidget _buildAppBar(DepartmentHeadController controller) {
+    return AppBar(
+      title: const Text(
+        'نظام إدارة ومتابعة أبحاث التخرج',
+        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: const Color(0xFF3F51B5), // Indigo matching the image
+      elevation: 0,
+      iconTheme: const IconThemeData(color: Colors.white),
+      actions: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.notifications_active_outlined, color: Colors.white),
+              onPressed: () {},
+            ),
+            Positioned(
+              right: 8,
+              top: 8,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            )
+          ],
+        ),
+        IconButton(
+          icon: const Icon(Icons.logout, color: Colors.white),
+          onPressed: () {
+             Get.offAllNamed('/login');
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
         children: [
-          const Text(
-            'أهلاً وسهلاً',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+          const UserAccountsDrawerHeader(
+            decoration: BoxDecoration(
+              color: Color(0xFF3F51B5),
+            ),
+            accountName: Text('د. محمد أحمد العامري', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            accountEmail: Text('رئيس القسم'),
+            currentAccountPicture: CircleAvatar(
+              backgroundColor: Colors.white,
+              child: Icon(Icons.person, color: Color(0xFF3F51B5), size: 40),
             ),
           ),
-          const SizedBox(height: 8),
-          const Text(
-            'رئيس القسم',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
-            ),
+          ListTile(
+            leading: const Icon(Icons.dashboard, color: Color(0xFF3F51B5)),
+            title: const Text('لوحة التحكم', style: TextStyle(color: Color(0xFF3F51B5), fontWeight: FontWeight.bold)),
+            tileColor: Colors.blue.withAlpha(25),
+            onTap: () {
+               Get.back();
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.check_box_outlined, color: Colors.grey),
+            title: const Text('اعتماد المرحلة الأولى'),
+            onTap: () {},
+          ),
+          ListTile(
+            leading: const Icon(Icons.menu_book, color: Colors.grey),
+            title: const Text('الاطلاع على الأبحاث'),
+            onTap: () {
+               Get.back();
+               Get.toNamed('/department_head/researches');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.description_outlined, color: Colors.grey),
+            title: const Text('التقارير الأكاديمية'),
+            onTap: () {},
+          ),
+          ListTile(
+            leading: const Icon(Icons.chat_bubble_outline, color: Colors.grey),
+            title: const Text('الدردشات'),
+            onTap: () {},
+          ),
+          ListTile(
+            leading: const Icon(Icons.settings_outlined, color: Colors.grey),
+            title: const Text('الإعدادات'),
+            onTap: () {},
           ),
         ],
       ),
     );
   }
 
-  /// Build statistics section
   Widget _buildStatisticsSection(DepartmentHeadController controller) {
     return Obx(
       () {
@@ -121,310 +157,67 @@ class DashboardScreen extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        return GridView.count(
+          crossAxisCount: 2,
+          childAspectRatio: 1.6,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
           children: [
-            const Text(
-              'الإحصائيات',
-              style: AppConstants.subHeadingStyle,
+            // Row 1
+            _buildStatCard(
+              title: 'عدد أبحاث القسم',
+              value: stats.totalResearches.toString(),
+              color: const Color(0xFF4C6EF5), // Blue
+              icon: Icons.menu_book,
+              onTap: () {
+                controller.filterByStatus('all');
+                Get.toNamed('/department_head/researches');
+              },
             ),
-            const SizedBox(height: AppConstants.paddingMedium),
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: AppConstants.paddingMedium,
-              crossAxisSpacing: AppConstants.paddingMedium,
-              children: [
-                _buildStatCard(
-                  title: 'إجمالي البحوث',
-                  value: stats.totalResearches.toString(),
-                  color: AppConstants.primaryColor,
-                  icon: Icons.library_books,
-                ),
-                _buildStatCard(
-                  title: 'قيد الانتظار',
-                  value: stats.pendingResearches.toString(),
-                  color: AppConstants.warningColor,
-                  icon: Icons.hourglass_empty,
-                ),
-                _buildStatCard(
-                  title: 'موافق عليها',
-                  value: stats.approvedResearches.toString(),
-                  color: AppConstants.successColor,
-                  icon: Icons.check_circle,
-                ),
-                _buildStatCard(
-                  title: 'مرفوضة',
-                  value: stats.rejectedResearches.toString(),
-                  color: AppConstants.errorColor,
-                  icon: Icons.cancel,
-                ),
-              ],
+            _buildStatCard(
+              title: 'الأبحاث قيد التنفيذ',
+              value: stats.inProgressResearches.toString(),
+              color: const Color(0xFFFFC107), // Yellow
+              icon: Icons.access_time_filled,
+              onTap: () {
+                controller.filterByStatus('in_progress');
+                Get.toNamed('/department_head/researches');
+              },
             ),
-            const SizedBox(height: AppConstants.paddingMedium),
-            _buildProgressCard(
-              title: 'متوسط الإنجاز',
-              percentage: stats.averageCompletionPercentage,
+            // Row 2
+            _buildStatCard(
+              title: 'الأبحاث المكتملة',
+              value: stats.completedResearches.toString(),
+              color: const Color(0xFF4CAF50), // Green
+              icon: Icons.check_circle,
+              onTap: () {
+                controller.filterByStatus('completed');
+                Get.toNamed('/department_head/researches');
+              },
             ),
-          ],
-        );
-      },
-    );
-  }
-
-  /// Build stat card
-  Widget _buildStatCard({
-    required String title,
-    required String value,
-    required Color color,
-    required IconData icon,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(AppConstants.paddingMedium),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withAlpha(25),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppConstants.secondaryColor,
+            _buildStatCard(
+              title: 'عدد المشرفين',
+              value: stats.totalSupervisors.toString(),
+              color: const Color(0xFF9C27B0), // Purple
+              icon: Icons.person,
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
+            // Row 3
+            _buildStatCard(
+              title: 'عدد الطلاب',
+              value: stats.totalStudents.toString(),
+              color: const Color(0xFF9C27B0), // Purple
+              icon: Icons.group,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Build progress card
-  Widget _buildProgressCard({
-    required String title,
-    required double percentage,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(AppConstants.paddingMedium),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withAlpha(25),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppConstants.secondaryColor,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: percentage / 100,
-              minHeight: 8,
-              backgroundColor: Colors.grey[200],
-              valueColor: AlwaysStoppedAnimation<Color>(
-                percentage >= 75
-                    ? AppConstants.successColor
-                    : percentage >= 50
-                        ? AppConstants.warningColor
-                        : AppConstants.errorColor,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${percentage.toStringAsFixed(1)}%',
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppConstants.secondaryColor,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Build quick actions section
-  Widget _buildQuickActionsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'الإجراءات السريعة',
-          style: AppConstants.subHeadingStyle,
-        ),
-        const SizedBox(height: AppConstants.paddingMedium),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionButton(
-                title: 'البحوث المعلقة',
-                icon: Icons.pending_actions,
-                onPressed: () {
-                  Get.toNamed('/department_head/pending_researches');
-                },
-              ),
-            ),
-            const SizedBox(width: AppConstants.paddingMedium),
-            Expanded(
-              child: _buildActionButton(
-                title: 'البحوث المتأخرة',
-                icon: Icons.warning,
-                onPressed: () {
-                  Get.toNamed('/department_head/late_researches');
-                },
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppConstants.paddingMedium),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionButton(
-                title: 'التقارير',
-                icon: Icons.assessment,
-                onPressed: () {
-                  Get.toNamed('/department_head/reports');
-                },
-              ),
-            ),
-            const SizedBox(width: AppConstants.paddingMedium),
-            Expanded(
-              child: _buildActionButton(
-                title: 'الإعدادات',
-                icon: Icons.settings,
-                onPressed: () {
-                  Get.toNamed('/department_head/settings');
-                },
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  /// Build action button
-  Widget _buildActionButton({
-    required String title,
-    required IconData icon,
-    required VoidCallback onPressed,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-        child: Container(
-          padding: const EdgeInsets.all(AppConstants.paddingMedium),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius:
-                BorderRadius.circular(AppConstants.borderRadiusMedium),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withAlpha(25),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                color: AppConstants.primaryColor,
-                size: 28,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppConstants.secondaryColor,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Build pending researches section
-  Widget _buildPendingResearchesSection(DepartmentHeadController controller) {
-    return Obx(
-      () {
-        final pending = controller.pendingResearches;
-        if (pending.isEmpty) {
-          return const SizedBox.shrink();
-        }
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'البحوث المعلقة',
-                  style: AppConstants.subHeadingStyle,
-                ),
-                TextButton(
-                  onPressed: () {
-                    Get.toNamed('/department_head/pending_researches');
-                  },
-                  child: const Text('عرض الكل'),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppConstants.paddingMedium),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: pending.length > 3 ? 3 : pending.length,
-              itemBuilder: (context, index) {
-                final research = pending[index];
-                return _buildResearchCard(research);
+            _buildStatCard(
+              title: 'الأبحاث المتأخرة',
+              value: controller.lateResearches.length.toString(),
+              color: const Color(0xFFF44336), // Red
+              icon: Icons.error,
+              onTap: () {
+                controller.filterByStatus('late');
+                Get.toNamed('/department_head/researches');
               },
             ),
           ],
@@ -433,67 +226,289 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  /// Build research card
-  Widget _buildResearchCard(dynamic research) {
+  Widget _buildStatCard({
+    required String title,
+    required String value,
+    required Color color,
+    required IconData icon,
+    VoidCallback? onTap,
+  }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
-      padding: const EdgeInsets.all(AppConstants.paddingMedium),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withAlpha(25),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.grey.withAlpha(20),
+            blurRadius: 6,
+            spreadRadius: 2,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  backgroundColor: color,
+                  radius: 20,
+                  child: Icon(icon, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                         Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black45,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          value,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChartSection(DepartmentHeadController controller) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withAlpha(20),
+            blurRadius: 6,
+            spreadRadius: 2,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            research.title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppConstants.secondaryColor,
+          const Text(
+            'حالة أبحاث القسم',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+          ),
+          const SizedBox(height: 30),
+          // Stack to simulate pie chart
+          Center(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                const SizedBox(
+                  width: 150,
+                  height: 150,
+                  child: CircularProgressIndicator(
+                    value: 1.0, // Base Red
+                    backgroundColor: Colors.transparent,
+                    color: Color(0xFFF44336), // Red
+                    strokeWidth: 35,
+                  ),
+                ),
+                const SizedBox(
+                  width: 150,
+                  height: 150,
+                  child: CircularProgressIndicator(
+                    value: 0.91, // 55% green + 36% yellow = 91%
+                    backgroundColor: Colors.transparent,
+                    color: Color(0xFFFFC107), // Yellow
+                    strokeWidth: 35,
+                  ),
+                ),
+                const SizedBox(
+                  width: 150,
+                  height: 150,
+                  child: CircularProgressIndicator(
+                    value: 0.55, // Green
+                    backgroundColor: Colors.transparent,
+                    color: Color(0xFF4CAF50), // Green
+                    strokeWidth: 35,
+                  ),
+                ),
+                // Inner center percent
+                Container(
+                  width: 70,
+                  height: 70,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text('55%', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF4CAF50), fontSize: 18)),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
+          // Chart Legends
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(
-                child: Text(
-                  'الطالب: ${research.studentName}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: AppConstants.warningColor.withAlpha(51),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Text(
-                  'قيد الانتظار',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppConstants.warningColor,
-                  ),
-                ),
-              ),
+              _buildLegend(color: const Color(0xFF4CAF50), text: 'أبحاث مكتملة'),
+              const SizedBox(width: 12),
+              _buildLegend(color: const Color(0xFFFFC107), text: 'قيد التنفيذ'),
+              const SizedBox(width: 12),
+              _buildLegend(color: const Color(0xFFF44336), text: 'متأخرة'),
             ],
           ),
+          const SizedBox(height: 36),
+          // Progress bar
+          Obx(() {
+            final stats = controller.statistics.value;
+            final percentage = stats?.averageCompletionPercentage ?? 54.8;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                     const Text('نسبة الإنجاز الكلية للقسم', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
+                     Text('${percentage.toStringAsFixed(1)}%', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: LinearProgressIndicator(
+                    value: percentage / 100,
+                    minHeight: 12,
+                    backgroundColor: Colors.grey[200],
+                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3F51B5)),
+                  ),
+                ),
+              ],
+            );
+          })
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLegend({required Color color, required String text}) {
+    return Row(
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(text, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+      ],
+    );
+  }
+
+  Widget _buildLatestActivitiesSection(DepartmentHeadController controller) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withAlpha(20),
+            blurRadius: 6,
+            spreadRadius: 2,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'آخر الأنشطة في القسم',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+          ),
+          const SizedBox(height: 16),
+          Obx(() {
+            final all = controller.allResearches;
+            if (all.isEmpty) {
+              return const Center(child: Text('لا توجد أنشطة حاليا', style: TextStyle(color: Colors.black54)));
+            }
+            final list = all.take(5).toList();
+            return ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: list.length,
+              separatorBuilder: (context, index) => const Divider(height: 24, color: Colors.grey, thickness: 0.2),
+              itemBuilder: (context, index) {
+                final item = list[index];
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.only(top: 4),
+                      width: 6,
+                      height: 35,
+                      decoration: BoxDecoration(
+                         color: const Color(0xFF3F51B5),
+                         borderRadius: BorderRadius.circular(4),
+                      )
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                           Text(
+                            'تحديث حالة بحث "${item.title}"',
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'الطالب: ${item.studentName}',
+                            style: const TextStyle(fontSize: 12, color: Colors.black54),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Adding dummy time similar to requested image
+                    Text(
+                      index == 0 ? 'منذ ساعتين' : (index == 1 ? 'منذ 4 ساعات' : 'أمس'),
+                       style: const TextStyle(fontSize: 11, color: Colors.grey),
+                    )
+                  ],
+                );
+              },
+            );
+          })
         ],
       ),
     );
